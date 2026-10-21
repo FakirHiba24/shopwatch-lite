@@ -9,13 +9,13 @@ def executer(signaux, demander=demander_validation):
     journal = []
     deja_vus = set()
     for source, texte in signaux:
-        evenement = extraire(texte, source)
-        if est_repete(evenement, deja_vus):
-            journal.append(f"IGNORE (repete) : {evenement.message}")
+        signal = extraire(texte, source)
+        if est_repete(signal, deja_vus):
+            journal.append(f"IGNORE (repete) : {signal.message}")
             continue
-        decision = evaluer(evenement)
+        diagnostic = evaluer(signal)
         validee = False
-        if decision.action != "ignorer":
-            validee = demander(decision)
-        consigner(decision, validee, journal)
+        if diagnostic.action != "ignorer":
+            validee = demander(diagnostic)
+        consigner(diagnostic, validee, journal)
     return journal
