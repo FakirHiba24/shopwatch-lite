@@ -1,7 +1,7 @@
 """Agent 2 : Analyse (B)."""
-from src.contrat import Decision, Evenement
+from src.contrat import Diagnostic, Signal
 
 
-def evaluer(evenement):
-    """Retourne une Decision (ignorer / alerter / escalader)."""
+def evaluer(signal):
+    """Retourne une Diagnostic (ignorer / alerter / escalader)."""
     raise NotImplementedError

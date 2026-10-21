@@ -1,5 +1,5 @@
 """Agent 1 : Extraction (A)."""
-from src.contrat import Evenement
+from src.contrat import Signal
 
 
 def masquer_donnees(texte):
@@ -8,10 +8,10 @@ def masquer_donnees(texte):
 
 
 def extraire(texte_brut, source):
-    """Transforme un texte brut en Evenement (donnees masquees)."""
+    """Transforme un texte brut en Signal (donnees masquees)."""
     raise NotImplementedError
 
 
-def est_repete(evenement, deja_vus):
+def est_repete(signal, deja_vus):
     """True si le signal a deja ete vu ; l'ajoute sinon a deja_vus (set)."""
     raise NotImplementedError
