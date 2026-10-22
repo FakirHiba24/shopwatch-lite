@@ -59,3 +59,15 @@ class TestCompteur(unittest.TestCase):
                 compteur = {"paiement": 3}
                 self.assertEqual(compter_incidents(exemple(**changements), compteur), 0)
                 self.assertEqual(compteur, {"paiement": 3})
+
+
+
+class TestFiches(unittest.TestCase):
+    def test_recherche_insensible_a_la_casse_et_ordre_de_la_base(self):
+        base = {"BUILD": "Lire le build", "timeout": "Verifier la passerelle", "faille": "Mettre a jour"}
+        sig = exemple(texte="TIMEOUT puis build puis faille")
+        self.assertEqual(chercher_fiches(sig, base), list(base.values()))
+
+    def test_absence_de_conseil(self):
+        self.assertEqual(chercher_fiches(exemple(texte="demarrage"), {"timeout": "Verifier"}), [])
+        self.assertEqual(chercher_fiches(exemple(), {}), [])

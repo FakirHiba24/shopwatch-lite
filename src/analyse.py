@@ -18,7 +18,8 @@ def compter_incidents(sig: Signal, compteur: dict) -> int:
 
 
 def chercher_fiches(sig: Signal, base: dict) -> list:
-    raise NotImplementedError
+    texte = sig.texte.lower()
+    return [conseil for mot, conseil in base.items() if mot.lower() in texte]
 
 
 def evaluer(sig: Signal, nb_incidents: int = 0) -> str:
