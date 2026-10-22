@@ -56,3 +56,30 @@ class TestJournal(unittest.TestCase):
         for ligne in ("", "2026-11-27", "2026-11-27 17:00:00 paiement ERROR"):
             with self.subTest(ligne=ligne), self.assertRaises(ValueError):
                 lire_journal(ligne, 1)
+
+
+
+class TestScan(unittest.TestCase):
+    def setUp(self):
+        self.rapport = {"id_faille": "CVE-DEMO", "paquet": "lib-panier", "risque": "critique",
+                        "date": "2026-11-27T17:09:00Z"}
+
+    def test_signal_scan_complet(self):
+        sig = lire_scan(self.rapport, 8, env="test")
+        self.assertEqual((sig.ref, sig.date, sig.origine, sig.service, sig.env, sig.categorie,
+                          sig.gravite, sig.texte, sig.etat),
+                         ("SH-0008", self.rapport["date"], "SCANNER", "lib-panier", "test",
+                          "FAILLE", "BLOQUANT", "Faille CVE-DEMO dans lib-panier", "RECU"))
+
+    def test_risques_et_casse(self):
+        for risque, attendu in {"CRITIQUE": "BLOQUANT", "Haut": "MAJEUR", "moyen": "MODERE",
+                                "bas": "MINEUR", "inconnu": "MINEUR"}.items():
+            with self.subTest(risque=risque):
+                sig = lire_scan(dict(self.rapport, risque=risque), 1)
+                self.assertEqual(sig.gravite, attendu)
+                self.assertEqual(sig.env, "production")
+
+    def test_chaque_cle_est_obligatoire(self):
+        for cle in self.rapport:
+            with self.subTest(cle=cle), self.assertRaises(ValueError):
+                lire_scan({k: v for k, v in self.rapport.items() if k != cle}, 1)

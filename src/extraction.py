@@ -26,7 +26,14 @@ def lire_journal(ligne: str, numero: int, origine: str = "PAIEMENT",
 
 
 def lire_scan(rapport: dict, numero: int, env: str = "production") -> Signal:
-    raise NotImplementedError
+    requises = {"id_faille", "paquet", "risque", "date"}
+    if not requises.issubset(rapport):
+        raise ValueError("Rapport de scan incomplet : " + ", ".join(sorted(requises - rapport.keys())))
+    gravites = {"critique": "BLOQUANT", "haut": "MAJEUR", "moyen": "MODERE"}
+    return Signal(ref=f"SH-{numero:04d}", date=rapport["date"], origine="SCANNER",
+                  service=rapport["paquet"], env=env, categorie="FAILLE",
+                  gravite=gravites.get(rapport["risque"].lower(), "MINEUR"),
+                  texte=f"Faille {rapport['id_faille']} dans {rapport['paquet']}")
 
 
 def lire_build(rapport: dict, numero: int, env: str = "production") -> Signal:
