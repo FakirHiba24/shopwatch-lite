@@ -88,3 +88,41 @@ class TestEvaluation(unittest.TestCase):
         for nombre in (5, 100, 101):
             with self.subTest(nombre=nombre):
                 self.assertEqual(evaluer(exemple(), nombre), "BLOQUANT")
+
+
+
+class TestDiagnostic(unittest.TestCase):
+    def test_observation_et_etat(self):
+        sig = exemple(gravite="MINEUR", texte="demarrage")
+        diag = diagnostiquer(sig, {})
+        self.assertEqual((diag.signal_ref, diag.niveau, diag.cause, diag.action, diag.critique,
+                          diag.origines, sig.etat),
+                         (sig.ref, "MINEUR", "Cause inconnue : verification manuelle", "Observer",
+                          False, ["PAIEMENT"], "EVALUE"))
+
+    def test_jointure_des_conseils(self):
+        diag = diagnostiquer(exemple(texte="build avec timeout"), {"timeout": "Passerelle", "build": "Journal"})
+        self.assertEqual(diag.cause, "Passerelle ; Journal")
+
+    def test_isolation_exige_validation(self):
+        diag = diagnostiquer(exemple(), {}, 4)
+        self.assertEqual(diag.niveau, "BLOQUANT")
+        self.assertEqual(diag.action, "Isoler le service paiement")
+        self.assertTrue(diag.critique)
+
+    def test_faille_prioritaire_sur_isolation(self):
+        diag = diagnostiquer(exemple(categorie="FAILLE", service="lib-panier", origine="SCANNER"), {}, 4)
+        self.assertEqual(diag.niveau, "BLOQUANT")
+        self.assertEqual(diag.action, "Corriger la dependance lib-panier")
+        self.assertFalse(diag.critique)
+        self.assertEqual(diag.origines, ["SCANNER"])
+
+    def test_build_prioritaire_sur_isolation(self):
+        diag = diagnostiquer(exemple(categorie="BUILD_ECHEC", service="deploiement", origine="BUILD"), {}, 4)
+        self.assertEqual(diag.action, "Rejouer le build deploiement")
+        self.assertFalse(diag.critique)
+
+    def test_build_reussi_observe(self):
+        diag = diagnostiquer(exemple(categorie="BUILD_OK", gravite="MINEUR", origine="BUILD"), {})
+        self.assertEqual(diag.action, "Observer")
+        self.assertFalse(diag.critique)
