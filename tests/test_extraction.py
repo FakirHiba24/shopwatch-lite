@@ -83,3 +83,29 @@ class TestScan(unittest.TestCase):
         for cle in self.rapport:
             with self.subTest(cle=cle), self.assertRaises(ValueError):
                 lire_scan({k: v for k, v in self.rapport.items() if k != cle}, 1)
+
+
+
+class TestBuild(unittest.TestCase):
+    def setUp(self):
+        self.rapport = {"etape": "deploiement", "resultat": "echec", "date": "2026-11-27T17:08:00Z"}
+
+    def test_signal_build_en_echec(self):
+        sig = lire_build(self.rapport, 9, env="dev")
+        self.assertEqual((sig.ref, sig.date, sig.origine, sig.service, sig.env, sig.categorie,
+                          sig.gravite, sig.texte),
+                         ("SH-0009", self.rapport["date"], "BUILD", "deploiement", "dev",
+                          "BUILD_ECHEC", "MAJEUR", "Build deploiement : echec"))
+
+    def test_resultats_et_casse(self):
+        for resultat in ("ECHEC", "Echec", "succes", "ok", "autre"):
+            with self.subTest(resultat=resultat):
+                sig = lire_build(dict(self.rapport, resultat=resultat), 1)
+                self.assertEqual(sig.categorie, "BUILD_ECHEC" if resultat.lower() == "echec" else "BUILD_OK")
+                self.assertEqual(sig.gravite, "MAJEUR" if resultat.lower() == "echec" else "MINEUR")
+                self.assertEqual(sig.env, "production")
+
+    def test_chaque_cle_est_obligatoire(self):
+        for cle in self.rapport:
+            with self.subTest(cle=cle), self.assertRaises(ValueError):
+                lire_build({k: v for k, v in self.rapport.items() if k != cle}, 1)

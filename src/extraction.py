@@ -37,4 +37,12 @@ def lire_scan(rapport: dict, numero: int, env: str = "production") -> Signal:
 
 
 def lire_build(rapport: dict, numero: int, env: str = "production") -> Signal:
-    raise NotImplementedError
+    requises = {"etape", "resultat", "date"}
+    if not requises.issubset(rapport):
+        raise ValueError("Rapport de build incomplet : " + ", ".join(sorted(requises - rapport.keys())))
+    echec = rapport["resultat"].lower() == "echec"
+    return Signal(ref=f"SH-{numero:04d}", date=rapport["date"], origine="BUILD",
+                  service=rapport["etape"], env=env,
+                  categorie="BUILD_ECHEC" if echec else "BUILD_OK",
+                  gravite="MAJEUR" if echec else "MINEUR",
+                  texte=f"Build {rapport['etape']} : {rapport['resultat']}")
