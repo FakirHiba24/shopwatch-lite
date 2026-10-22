@@ -40,3 +40,22 @@ class TestRepetition(unittest.TestCase):
         vus = set()
         est_repete(exemple(), vus)
         self.assertTrue(est_repete(exemple(ref="SH-9999", gravite="BLOQUANT"), vus))
+
+
+
+class TestCompteur(unittest.TestCase):
+    def test_incidents_cumules_par_service(self):
+        compteur = {}
+        self.assertEqual(compter_incidents(exemple(), compteur), 1)
+        self.assertEqual(compter_incidents(exemple(gravite="BLOQUANT"), compteur), 2)
+        self.assertEqual(compter_incidents(exemple(service="panier"), compteur), 1)
+        self.assertEqual(compteur, {"paiement": 2, "panier": 1})
+
+    def test_signaux_non_comptes_ne_modifient_pas_le_compteur(self):
+        for changements in ({"gravite": "MODERE"}, {"gravite": "MINEUR"},
+                            {"categorie": "FAILLE", "gravite": "BLOQUANT"},
+                            {"categorie": "BUILD_ECHEC"}):
+            with self.subTest(changements=changements):
+                compteur = {"paiement": 3}
+                self.assertEqual(compter_incidents(exemple(**changements), compteur), 0)
+                self.assertEqual(compteur, {"paiement": 3})
