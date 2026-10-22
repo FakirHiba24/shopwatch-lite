@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [develop, "feature/**", "hotfix/**", "release/**"]
+    branches: [develop, main, "feature/**", "fix/**", "hotfix/**", "release/**"]
     tags: ["v*"]
   pull_request:
     branches: [develop, main]
@@ -16,6 +16,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Verification de la syntaxe
-        run: python -m compileall -q src
+        run: python -m compileall -q src tests main.py
       - name: Tests unitaires
         run: python -m unittest -v
