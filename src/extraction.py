@@ -1,17 +1,19 @@
-"""Agent 1 : Extraction (A)."""
+"""Agent 1 : interfaces du tutoriel, implementation sur feature/extraction."""
 from src.contrat import Signal
 
 
-def masquer_donnees(texte):
-    """Masque les donnees sensibles (mots de passe, cles...)."""
+def masquer_donnees(texte: str) -> str:
     raise NotImplementedError
 
 
-def extraire(texte_brut, source):
-    """Transforme un texte brut en Signal (donnees masquees)."""
+def lire_journal(ligne: str, numero: int, origine: str = "PAIEMENT",
+                 env: str = "production") -> Signal:
     raise NotImplementedError
 
 
-def est_repete(signal, deja_vus):
-    """True si le signal a deja ete vu ; l'ajoute sinon a deja_vus (set)."""
+def lire_scan(rapport: dict, numero: int, env: str = "production") -> Signal:
+    raise NotImplementedError
+
+
+def lire_build(rapport: dict, numero: int, env: str = "production") -> Signal:
     raise NotImplementedError
