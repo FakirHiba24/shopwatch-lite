@@ -71,3 +71,20 @@ class TestFiches(unittest.TestCase):
     def test_absence_de_conseil(self):
         self.assertEqual(chercher_fiches(exemple(texte="demarrage"), {"timeout": "Verifier"}), [])
         self.assertEqual(chercher_fiches(exemple(), {}), [])
+
+
+
+class TestEvaluation(unittest.TestCase):
+    def test_conserve_la_gravite_avant_le_seuil(self):
+        for niveau in ("MINEUR", "MODERE", "MAJEUR", "BLOQUANT"):
+            with self.subTest(niveau=niveau):
+                self.assertEqual(evaluer(exemple(gravite=niveau)), niveau)
+                self.assertEqual(evaluer(exemple(gravite=niveau), 3), niveau)
+
+    def test_quatre_incidents_declenchent_le_niveau_bloquant(self):
+        self.assertEqual(evaluer(exemple(), 4), "BLOQUANT")
+
+    def test_seuil_reste_bloquant_au_dela_de_quatre(self):
+        for nombre in (5, 100, 101):
+            with self.subTest(nombre=nombre):
+                self.assertEqual(evaluer(exemple(), nombre), "BLOQUANT")
