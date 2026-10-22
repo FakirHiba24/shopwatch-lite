@@ -1,9 +1,13 @@
-"""Agent 2 : interfaces du tutoriel, implementation sur feature/analyse."""
+"""Agent 2 : deduplication, correlation et diagnostic deterministe."""
 from src.contrat import Diagnostic, Signal
 
 
 def est_repete(sig: Signal, vus: set) -> bool:
-    raise NotImplementedError
+    cle = (sig.date, sig.origine, sig.service, sig.categorie, sig.texte)
+    if cle in vus:
+        return True
+    vus.add(cle)
+    return False
 
 
 def compter_incidents(sig: Signal, compteur: dict) -> int:
