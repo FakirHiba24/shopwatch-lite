@@ -1,21 +1,24 @@
-"""Orchestration : extraction -> analyse -> notification."""
-from src.analyse import evaluer
-from src.extraction import est_repete, extraire
-from src.notification import consigner, demander_validation
+"""Plan de traitement fourni dans le tutoriel : extraction, analyse, notification."""
+from src import analyse, extraction, notification
+from src.contrat import FICHES
 
 
-def executer(signaux, demander=demander_validation):
-    """signaux : liste de (source, texte_brut). Retourne le journal."""
-    journal = []
-    deja_vus = set()
-    for source, texte in signaux:
-        signal = extraire(texte, source)
-        if est_repete(signal, deja_vus):
-            journal.append(f"IGNORE (repete) : {signal.message}")
-            continue
-        diagnostic = evaluer(signal)
-        validee = False
-        if diagnostic.action != "ignorer":
-            validee = demander(diagnostic)
-        consigner(diagnostic, validee, journal)
-    return journal
+def _traiter(sig, vus, compteur, registre, base):
+    if analyse.est_repete(sig, vus):
+        return None
+    nb = analyse.compter_incidents(sig, compteur)
+    diag = analyse.diagnostiquer(sig, base, nb)
+    msg = notification.diffuser(sig, diag, registre)
+    return {"signal": sig, "diagnostic": diag, "message": msg}
+
+
+def traiter_journal(ligne, numero, vus, compteur, registre, base=FICHES):
+    return _traiter(extraction.lire_journal(ligne, numero), vus, compteur, registre, base)
+
+
+def traiter_scan(rapport, numero, vus, compteur, registre, base=FICHES):
+    return _traiter(extraction.lire_scan(rapport, numero), vus, compteur, registre, base)
+
+
+def traiter_build(rapport, numero, vus, compteur, registre, base=FICHES):
+    return _traiter(extraction.lire_build(rapport, numero), vus, compteur, registre, base)
