@@ -25,7 +25,7 @@ class TestArtefact(unittest.TestCase):
         with ZipFile(chemin) as archive:
             self.assertEqual(set(archive.namelist()), {"main.py", "VERSION", "README.md", "CHANGELOG.md",
                                                       "src/__init__.py", "src/contrat.py"})
-            self.assertEqual(archive.read("VERSION"), b"1.0.0\n")
+            self.assertEqual(archive.read("VERSION"), (self.racine / "VERSION").read_bytes())
             self.assertIsNone(archive.testzip())
 
     def test_hotfix_et_fichier_requis_absent(self):
