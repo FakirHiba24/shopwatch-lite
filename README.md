@@ -31,7 +31,7 @@ sur un serveur n'est executee.
 ## Traitement et garde-fous
 
 1. Extraction normalise journaux, rapports de scan et rapports de build en
-   `Signal`, en masquant les parametres sensibles du contrat.
+   `Signal`, en masquant les parametres sensibles du contrat et les jetons Bearer.
 2. Analyse ignore les signaux deja recus, compte les incidents par service,
    recherche les fiches et construit un `Diagnostic`. Le quatrieme incident
    eleve le niveau a BLOQUANT ; les actions FAILLE et BUILD_ECHEC ont priorite.
@@ -48,9 +48,9 @@ fictives reprises de l'enonce pour la demonstration.
 
 ## Tests et Git Flow
 
-La suite comporte 52 tests : contrat, Extraction, Analyse, Notification et
+La suite comporte 55 tests : contrat, Extraction, Analyse, Notification et
 construction de l'artefact. Elle couvre notamment les seuils 3/4/5, les
-priorites du diagnostic, les refus de validation et le contenu du ZIP.
+priorites du diagnostic, les refus de validation, le masquage Bearer et le contenu du ZIP.
 
 `main` correspond aux versions stables et `develop` a l'integration. Les
 changements passent par une branche et une PR avec une approbation et le

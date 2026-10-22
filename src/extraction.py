@@ -5,7 +5,9 @@ from src.contrat import Signal
 
 
 def masquer_donnees(texte: str) -> str:
-    """Masquer les six parametres du contrat avant toute diffusion."""
+    """Masquer les parametres sensibles et jetons Bearer avant toute diffusion."""
+    texte = re.sub(r"(\bBearer[ \t]+)[^\s&,;]+", r"\1[MASQUE]",
+                   texte, flags=re.IGNORECASE)
     motif = r"\b(password|pwd|token|secret|card|iban)(\s*[=:]\s*)[^\s&,;]+"
     return re.sub(motif, lambda m: m.group(1) + m.group(2) + "[MASQUE]",
                   texte, flags=re.IGNORECASE)
