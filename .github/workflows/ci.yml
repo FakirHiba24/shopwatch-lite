@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main, "feature/**", "fix/**", "hotfix/**", "release/**"]
+    tags: ["v*"]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verification de la syntaxe
+        run: python -m compileall -q src tests tools main.py
+      - name: Tests unitaires
+        run: python -m unittest -v
+
+  build:
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Construire l'artefact
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python tools/construire_artefact.py "$RELEASE_TAG"
+      - name: Publier l'artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shopwatch-lite-${{ github.ref_name }}
+          path: dist/shopwatch-lite-${{ github.ref_name }}.zip
+          if-no-files-found: error
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploiement simule
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: printf 'Deploiement SIMULE de %s (aucun serveur reel)\n' "$RELEASE_TAG"
