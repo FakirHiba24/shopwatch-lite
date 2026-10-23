@@ -5,6 +5,23 @@ from src.extraction import lire_build, lire_journal, lire_scan, masquer_donnees
 
 
 class TestMasquage(unittest.TestCase):
+    def test_bearer(self):
+        self.assertEqual(masquer_donnees("Authorization: Bearer eyJ.abc-1"),
+                         "Authorization: Bearer [MASQUE]")
+
+    def test_bearer_casse_separateurs_et_idempotence(self):
+        cas = [
+            ("authorization: bearer eyJ.abc-1_~+/==&client=bob",
+             "authorization: bearer [MASQUE]&client=bob"),
+            ("Authorization: BEARER abc,client=bob",
+             "Authorization: BEARER [MASQUE],client=bob"),
+            ("Bearer \t abc;pwd=xyz", "Bearer \t [MASQUE];pwd=[MASQUE]"),
+        ]
+        for texte, attendu in cas:
+            with self.subTest(texte=texte):
+                self.assertEqual(masquer_donnees(texte), attendu)
+                self.assertEqual(masquer_donnees(attendu), attendu)
+
     def test_six_parametres_et_casse(self):
         for nom in ("password", "pwd", "token", "secret", "card", "iban"):
             for cle in (nom, nom.upper(), nom.capitalize()):
@@ -33,6 +50,11 @@ class TestMasquage(unittest.TestCase):
 
 
 class TestJournal(unittest.TestCase):
+    def test_bearer_masque_avant_creation_signal(self):
+        sig = lire_journal("2026-11-27 17:02:11 paiement ERROR Authorization: Bearer eyJ.abc-1", 42)
+        self.assertEqual(sig.texte, "Authorization: Bearer [MASQUE]")
+        self.assertNotIn("eyJ.abc-1", sig.texte)
+
     def test_normalisation_et_masquage(self):
         sig = lire_journal("2026-11-27 17:02:11 paiement ERROR timeout card=123 suite", 42)
         self.assertEqual((sig.ref, sig.date, sig.origine, sig.service, sig.env, sig.categorie,
